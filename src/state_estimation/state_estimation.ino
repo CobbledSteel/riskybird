@@ -195,7 +195,8 @@ void loop() {
   Serial.print("\tPitch: ");
   Serial.print(pitch_in_degrees);
   Serial.print("\tYaw: ");
-  Serial.println(yaw_in_degrees);
+  Serial.print(yaw_in_degrees);
+  Serial.print("\tToF: ");
 
   for (uint8_t i = 0; i < NUM_TOF; i++)
   {
@@ -204,5 +205,6 @@ void loop() {
     Serial.print('\t');
   }
   Serial.println();
+  
   delay(50);
 }
