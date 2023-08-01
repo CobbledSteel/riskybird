@@ -25,6 +25,11 @@ GyroData IMUGyro;
 MagData IMUMag;
 Madgwick filter;
 
+hw_timer_t * timer = NULL;
+
+uint32_t count;
+unsigned long current_time;
+
 struct Quaternion_t {
   float w, x, y, z;
 };
@@ -32,6 +37,17 @@ struct Quaternion_t {
 struct Euler_t {
   float roll, pitch, yaw;
 };
+
+unsigned long old_isr_time;
+unsigned long isr_time;
+
+void IRAM_ATTR onTimer() {
+  // Your interrupt handling code here
+  // for(uint8_t i = 0; i < NUM_TOF; i++) {
+  //   tof_data[i] = tof.tof_sensors[i].read();
+  //   if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+  // }
+}
 
 void setLED(int i, int r, int g, int b) {
   pixels.setPixelColor(i, pixels.Color(r,g,b));
@@ -160,6 +176,17 @@ void setup() {
   filter.begin(0.2f);
 #endif
   tof.init_tof();
+  // Initialize the hardware timer
+  timer = timerBegin(0, 80, true); // 80 is the prescaler (with 80MHz CPU clock this makes it 1 MHz)
+  
+  // Attach the interrupt handler routine to the timer
+  timerAttachInterrupt(timer, &onTimer, true);
+  
+  // Set the timer to trigger every 50 ms
+  timerAlarmWrite(timer, 50000, true); // In microseconds
+
+  // Enable the timer
+  timerAlarmEnable(timer);
   statusReady();
 }
 
@@ -190,21 +217,34 @@ void loop() {
   float pitch_in_degrees = degrees(e.pitch);
   float yaw_in_degrees = degrees(e.yaw);
 
-  Serial.print("Roll: ");
-  Serial.print(roll_in_degrees);
-  Serial.print("\tPitch: ");
-  Serial.print(pitch_in_degrees);
-  Serial.print("\tYaw: ");
-  Serial.print(yaw_in_degrees);
-  Serial.print("\tToF: ");
-
-  for (uint8_t i = 0; i < NUM_TOF; i++)
-  {
-    Serial.print(tof.tof_sensors[i].read());
+  uint16_t tof_data[5];
+  for(uint8_t i = 0; i < NUM_TOF; i++) {
+    tof_data[i] = tof.tof_sensors[i].read(false);
     if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-    Serial.print('\t');
   }
-  Serial.println();
-  
-  delay(50);
+
+  if(count % 10 == 0) {
+    unsigned long old_time = current_time;
+    current_time = millis();
+
+    Serial.print("Roll: ");
+    Serial.print(roll_in_degrees);
+    Serial.print("\tPitch: ");
+    Serial.print(pitch_in_degrees);
+    Serial.print("\tYaw: ");
+    Serial.print(yaw_in_degrees);
+    Serial.print("\tToF:\t");
+
+    for (uint8_t i = 0; i < NUM_TOF; i++) {
+      Serial.print(tof_data[i]); 
+      Serial.print('\t');
+    }
+    Serial.print("(");
+    Serial.print(current_time - old_time);
+    Serial.print("ms)");
+    Serial.println();
+    current_time = millis();
+  }
+  count++;
+  //delay(50);
 }
