@@ -1,8 +1,13 @@
 #include "FastIMU.h"
 #include "Madgwick.h"
 #include "tof.h"
+#include "uav_pid.h"
+
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
+#include <Preferences.h>
+
+
 
 #define IMU_ADDRESS 0x68    //Change to the address of the IMU
 #define PERFORM_CALIBRATION //Comment to disable startup calibration
@@ -14,6 +19,8 @@
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
+Preferences preferences;
+
 ToF tof;
 MPU9250 IMU;               //Change to the name of any supported IMU!
 
@@ -24,6 +31,8 @@ AccelData IMUAccel;    //Sensor data
 GyroData IMUGyro;
 MagData IMUMag;
 Madgwick filter;
+
+UAV_PID pid;
 
 hw_timer_t * timer = NULL;
 
@@ -47,6 +56,37 @@ void IRAM_ATTR onTimer() {
   //   tof_data[i] = tof.tof_sensors[i].read();
   //   if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
   // }
+}
+
+void saveCalibrationData(calData& data) {
+  Serial.println("Saving calibration preferences");
+  Serial.print("Valid: ");
+  Serial.println(data.valid);
+	preferences.begin("riskybird", false);
+	preferences.putBool("valid", data.valid);
+	preferences.putBytes("accelBias", data.accelBias, sizeof(data.accelBias));
+	preferences.putBytes("gyroBias", data.gyroBias, sizeof(data.gyroBias));
+	preferences.putBytes("magBias", data.magBias, sizeof(data.magBias));
+	preferences.putBytes("magScale", data.magScale, sizeof(data.magScale));
+	preferences.end();
+}
+
+bool loadCalibrationData(calData& data) {
+  Serial.println("Loading calibration preferences");
+	preferences.begin("riskybird", true);
+	data.valid = preferences.getBool("valid", false); // second parameter is default value
+	if (!data.valid) {
+		// data is not valid, don't load
+    Serial.println("Invalid calibration.");
+		preferences.end();
+		return false;
+	}
+	preferences.getBytes("accelBias", data.accelBias, sizeof(data.accelBias));
+	preferences.getBytes("gyroBias", data.gyroBias, sizeof(data.gyroBias));
+	preferences.getBytes("magBias", data.magBias, sizeof(data.magBias));
+	preferences.getBytes("magScale", data.magScale, sizeof(data.magScale));
+	preferences.end();
+	return true;
 }
 
 void setLED(int i, int r, int g, int b) {
@@ -125,23 +165,28 @@ void setup() {
   }
 
 #ifdef PERFORM_CALIBRATION
-  Serial.println("FastIMU Calibrated Quaternion example");
-  if (IMU.hasMagnetometer()) {
-    delay(1000);
-    setLED(0, BRIGHTNESS, 0 , BRIGHTNESS);
-    Serial.println("Move IMU in figure 8 pattern until done.");
-    delay(3000);
-    IMU.calibrateMag(&calib);
-    Serial.println("Magnetic calibration done!");
+  if(!loadCalibrationData(calib)) {
+    Serial.println("FastIMU Calibrated Quaternion example");
+    if (IMU.hasMagnetometer()) {
+      delay(1000);
+      setLED(0, BRIGHTNESS, 0 , BRIGHTNESS);
+      Serial.println("Move IMU in figure 8 pattern until done.");
+      delay(3000);
+      IMU.calibrateMag(&calib);
+      Serial.println("Magnetic calibration done!");
+    }
+    else {
+      delay(1000);
+    }
+    Serial.println("Keep IMU level.");
+    setLED(0, BRIGHTNESS, BRIGHTNESS , 0 );
+    delay(5000);
+    
+  
+    IMU.calibrateAccelGyro(&calib);
+    Serial.println("Calibration done!");
+    saveCalibrationData(calib);
   }
-  else {
-    delay(1000);
-  }
-  Serial.println("Keep IMU level.");
-  setLED(0, BRIGHTNESS, BRIGHTNESS , 0 );
-  delay(5000);
-  IMU.calibrateAccelGyro(&calib);
-  Serial.println("Calibration done!");
   Serial.println("Accel biases X/Y/Z: ");
   Serial.print(calib.accelBias[0]);
   Serial.print(", ");
@@ -169,11 +214,12 @@ void setup() {
     Serial.println(calib.magScale[2]);
   }
   setLED(0, 0, 0, 0 );
-  delay(5000);
+  //delay(1000);
   IMU.init(calib, IMU_ADDRESS);
   IMU.setIMUGeometry(3);
 
-  filter.begin(0.2f);
+  //filter.begin(0.2f);
+  filter.begin(2.0f);
 #endif
   tof.init_tof();
   // Initialize the hardware timer
@@ -187,6 +233,8 @@ void setup() {
 
   // Enable the timer
   timerAlarmEnable(timer);
+  pid.init();
+  pid.updateSetpoints(0,0,0,0.2);
   statusReady();
 }
 
@@ -223,7 +271,20 @@ void loop() {
     if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
   }
 
-  if(count % 10 == 0) {
+  
+  if (count == 1000) {
+    pid.updateSetpoints(0,0,e.yaw,0.5);
+  }
+  pid.updateState(e.roll, e.pitch, e.yaw, tof_data[0] / 1000.0);
+  pid.compute();
+
+  if (count < 1200 && count >= 1000) {
+    pid.setMotors();
+  } else {
+    pid.stopMotors();
+  }
+
+  if(count % 50 == 0) {
     unsigned long old_time = current_time;
     current_time = millis();
 
@@ -233,7 +294,16 @@ void loop() {
     Serial.print(pitch_in_degrees);
     Serial.print("\tYaw: ");
     Serial.print(yaw_in_degrees);
+    Serial.print("\t");
+
+    Serial.print("dRoll: ");
+    Serial.print(IMUGyro.gyroX);
+    Serial.print("\tdPitch: ");
+    Serial.print(IMUGyro.gyroY);
+    Serial.print("\tdYaw: ");
+    Serial.print(IMUGyro.gyroZ);
     Serial.print("\tToF:\t");
+    
 
     for (uint8_t i = 0; i < NUM_TOF; i++) {
       Serial.print(tof_data[i]); 
@@ -243,6 +313,7 @@ void loop() {
     Serial.print(current_time - old_time);
     Serial.print("ms)");
     Serial.println();
+    pid.printMotors();
     current_time = millis();
   }
   count++;

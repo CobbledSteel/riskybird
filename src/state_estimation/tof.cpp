@@ -113,7 +113,7 @@ void ToF::init_tof() {
   }
   for (int i = 0; i < NUM_TOF; i++) {
     PCA9534_digitalWrite(tof_pin[i], HIGH);
-    delay(1000);
+    delay(50);
     if (!tof_sensors[i].init()){
       Serial.println("Failed to detect and initialize ToF sensor!");
       while (1);
