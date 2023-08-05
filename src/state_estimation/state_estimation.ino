@@ -6,6 +6,9 @@
 #include <Adafruit_NeoPixel.h>
 #include <Wire.h>
 #include <Preferences.h>
+#include <WiFi.h>
+
+
 
 
 
@@ -16,6 +19,11 @@
 #define PIN 8
 #define NUMPIXELS 2
 #define BRIGHTNESS 20
+
+const char* ssid = "CobbledPhone";
+const char* password = "11111111";
+
+WiFiServer server(80);
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
@@ -128,6 +136,8 @@ Euler_t quaternionToEuler(Quaternion_t q) {
 
   return e;
 }
+
+
 
 
 void setup() {
@@ -276,9 +286,10 @@ void loop() {
     pid.updateSetpoints(0,0,e.yaw,0.5);
   }
   pid.updateState(e.roll, e.pitch, e.yaw, tof_data[0] / 1000.0);
+  pid.updateStateRate(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ);
   pid.compute();
 
-  if (count < 1200 && count >= 1000) {
+  if (count < 1400 && count >= 1000) {
     pid.setMotors();
   } else {
     pid.stopMotors();

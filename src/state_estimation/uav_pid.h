@@ -16,6 +16,15 @@ class UAV_PID {
     double state_roll, state_pitch, state_yaw, state_alt;
     double out_roll, out_pitch, out_yaw, out_alt;
 
+    double Kp_roll_rate, Kd_roll_rate, Ki_roll_rate;
+    double Kp_pitch_rate, Kd_pitch_rate, Ki_pitch_rate;
+    double Kp_yaw_rate, Kd_yaw_rate, Ki_yaw_rate;
+    double Kp_alt_rate, Kd_alt_rate, Ki_alt_rate;
+
+    double set_roll_rate, set_pitch_rate, set_yaw_rate;
+    double state_roll_rate, state_pitch_rate, state_yaw_rate;
+    double out_roll_rate, out_pitch_rate, out_yaw_rate;
+
     double base_speed;
 
     double motor_speeds[4];
@@ -26,6 +35,10 @@ class UAV_PID {
     PID * pidYaw;
     PID * pidAlt;
 
+    PID * pidRollRate;
+    PID * pidPitchRate;
+    PID * pidYawRate;
+
 
   public:
     UAV_PID(void);
@@ -34,6 +47,8 @@ class UAV_PID {
     void adjustAngleDifference(float new_angle);
     void updateSetpoints(double roll, double pitch, double yaw, double alt);
     void updateState(double roll, double pitch, double yaw, double alt);
+    void updateSetpointsRate(double roll_rate, double pitch_rate, double yaw_rate);
+    void updateStateRate(double roll_rate, double pitch_rate, double yaw_rate);
     void setMotors(void);
     void printMotors(void);
     void stopMotors(void);

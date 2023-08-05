@@ -2,27 +2,52 @@
 #include <stdint.h>
 #include <Arduino.h>
 
+float getAltitude(float tofDistance, float roll, float pitch) {
+  // roll and pitch angles are assumed to be in radians
+  // tofDistance is the raw measurement from the ToF sensor
 
+  // cos(theta) ~= 1 - theta^2 / 2 for small theta
+  // we compute 1 / cos(theta) to correct the ToF measurement
+  float rollCorrection = 1.0 / (1.0 - roll * roll / 2.0);
+  float pitchCorrection = 1.0 / (1.0 - pitch * pitch / 2.0);
+
+  // the actual altitude is the ToF measurement divided by the correction factors
+  float altitude = tofDistance * rollCorrection * pitchCorrection;
+
+  return altitude;
+}
 
 UAV_PID::UAV_PID(void) {
 
-    base_speed = 0.6;
+    base_speed = 0.4;
 
-    Kp_roll = 0.0;
+    Kp_roll = 10;
     Kd_roll = 0.0;
-    Ki_roll = 0.00;
+    Ki_roll = 0.1;
 
-    Kp_pitch = 0.0;
+    Kp_pitch = 10;
     Kd_pitch = 0.0;
-    Ki_pitch = 0.00;
+    Ki_pitch = 0.1;
 
-    Kp_yaw = 0.1;
+    Kp_yaw = 0.0;
     Kd_yaw = 0.0;
     Ki_yaw = 0.0;
 
-    Kp_alt = 0.3;
+    Kp_alt = 0.25;
     Kd_alt = 0;
     Ki_alt = 0;
+
+    Kp_roll_rate = 0.0004;
+    Kd_roll_rate = 0.0;
+    Ki_roll_rate = 0.0000;
+
+    Kp_pitch_rate = 0.0004;
+    Kd_pitch_rate = 0.0000;
+    Ki_pitch_rate = 0.00;
+
+    Kp_yaw_rate = 0.0025;
+    Kd_yaw_rate = 0.0;
+    Ki_yaw_rate = 0.0005;
 }
 
 void UAV_PID::init() {
@@ -31,16 +56,27 @@ void UAV_PID::init() {
   pidYaw = new PID(&state_yaw, &out_yaw, &set_yaw_err, Kp_yaw, Ki_yaw, Kd_yaw, DIRECT);
   pidAlt = new PID(&state_alt, &out_alt, &set_alt, Kp_alt, Ki_alt, Kd_alt, DIRECT);
 
+  pidRollRate = new PID(&state_roll_rate, &out_roll_rate, &set_roll_rate, Kp_roll_rate, Ki_roll_rate, Kd_roll_rate, DIRECT);
+  pidPitchRate = new PID(&state_pitch_rate, &out_pitch_rate, &set_pitch_rate, Kp_pitch_rate, Ki_pitch_rate, Kd_pitch_rate, DIRECT);
+  pidYawRate = new PID(&state_yaw_rate, &out_yaw_rate, &set_yaw_rate, Kp_yaw_rate, Ki_yaw_rate, Kd_yaw_rate, DIRECT);
+
   pidRoll->SetMode(AUTOMATIC);
   pidPitch->SetMode(AUTOMATIC);
   pidYaw->SetMode(AUTOMATIC);
   pidAlt->SetMode(AUTOMATIC);
 
+  pidRollRate->SetMode(AUTOMATIC);
+  pidPitchRate->SetMode(AUTOMATIC);
+  pidYawRate->SetMode(AUTOMATIC);
+
   pidRoll->SetOutputLimits(-100, 100);
   pidPitch->SetOutputLimits(-100, 100);
   pidYaw->SetOutputLimits(-100, 100);
-  pidAlt->SetOutputLimits(-100, 100);
+  pidAlt->SetOutputLimits(-0.3, 0.3);
 
+  pidRollRate->SetOutputLimits(-0.6, 0.6);
+  pidPitchRate->SetOutputLimits(-0.6, 0.6);
+  pidYawRate->SetOutputLimits(-0.6, 0.6);
 
   for (int i = 0; i < 4; i++) {
     pinMode(motor_pin[i], OUTPUT);
@@ -63,10 +99,15 @@ void UAV_PID::compute(void) {
   pidYaw->Compute();
   pidAlt->Compute();
 
-  motor_speeds[0] = base_speed + out_alt + out_pitch + out_roll + out_yaw;
-  motor_speeds[1] = base_speed + out_alt - out_pitch + out_roll - out_yaw;
-  motor_speeds[2] = base_speed + out_alt - out_pitch - out_roll + out_yaw;
-  motor_speeds[3] = base_speed + out_alt + out_pitch - out_roll - out_yaw;
+  updateSetpointsRate(out_roll,out_pitch,0);
+  pidRollRate->Compute();
+  pidPitchRate->Compute();
+  pidYawRate->Compute();
+
+  motor_speeds[2] = base_speed + out_alt + out_pitch_rate + out_roll_rate + out_yaw_rate;
+  motor_speeds[3] = base_speed + out_alt - out_pitch_rate + out_roll_rate - out_yaw_rate;
+  motor_speeds[0] = base_speed + out_alt - out_pitch_rate - out_roll_rate + out_yaw_rate;
+  motor_speeds[1] = base_speed + out_alt + out_pitch_rate - out_roll_rate - out_yaw_rate;
 
   for(uint8_t i = 0; i < 4; i++) {
     motor_speeds[i] = constrain(motor_speeds[i]*255, 0.0, 255.0);
@@ -86,7 +127,19 @@ void UAV_PID::updateState(double roll, double pitch, double yaw, double alt) {
   state_roll = roll;
   state_pitch = pitch;
   adjustAngleDifference(yaw);
-  state_alt = alt;
+  state_alt = getAltitude(alt, roll, pitch);
+}
+
+void UAV_PID::updateSetpointsRate(double roll_rate, double pitch_rate, double yaw_rate) {
+  set_roll_rate = roll_rate;
+  set_pitch_rate = pitch_rate;
+  set_yaw_rate = yaw_rate;
+}
+
+void UAV_PID::updateStateRate(double roll_rate, double pitch_rate, double yaw_rate) {
+  state_roll_rate = roll_rate;
+  state_pitch_rate = pitch_rate;
+  state_yaw_rate = -yaw_rate;
 }
 
 void UAV_PID::setMotors(void) {
@@ -98,15 +151,25 @@ void UAV_PID::setMotors(void) {
 }
 
 void UAV_PID::printMotors(void) {
-  Serial.print("PID: \tB: ");
+  Serial.print("PID_S: \tB: ");
   Serial.print(base_speed);
-  Serial.print("\tR: ");
+  Serial.print("\tR:\t");
   Serial.print(out_roll);
-  Serial.print("\tP: ");
+  Serial.print("\tP:\t");
   Serial.print(out_pitch);
-  Serial.print("\tY: ");
+  Serial.print("\tY:\t");
   Serial.print(out_yaw);
-  Serial.print("\t:A ");
+  Serial.print("\t:A\t");
+  Serial.println(out_alt);
+  Serial.print("PID_R: \tB: ");
+  Serial.print(base_speed);
+  Serial.print("\tR:\t");
+  Serial.print(out_roll_rate);
+  Serial.print("\tP:\t");
+  Serial.print(out_pitch_rate);
+  Serial.print("\tY:\t");
+  Serial.print(out_yaw_rate);
+  Serial.print("\t:A\t");
   Serial.println(out_alt);
   base_speed + out_alt + out_pitch + out_roll + out_yaw;
   Serial.print("Front: \t");
