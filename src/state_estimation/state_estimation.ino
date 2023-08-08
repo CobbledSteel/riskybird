@@ -15,7 +15,7 @@
 #define IMU_ADDRESS 0x68    //Change to the address of the IMU
 #define PERFORM_CALIBRATION //Comment to disable startup calibration
 #define SERIAL_BUFFER_LEN 256
-#define REAL
+// #define REAL
 
 
 
@@ -23,8 +23,8 @@
 #define NUMPIXELS 2
 #define BRIGHTNESS 20
 
-const char* ssid = "CobbledPhone";
-const char* password = "11111111";
+const char* ssid = "SSID";
+const char* password = "PASSWD";
 
 char buf[SERIAL_BUFFER_LEN];
 
