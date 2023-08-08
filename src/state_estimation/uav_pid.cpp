@@ -23,29 +23,29 @@ UAV_PID::UAV_PID(void) {
 
     Kp_roll = 10;
     Kd_roll = 0.0;
-    Ki_roll = 0.1;
+    Ki_roll = 0.0;
 
     Kp_pitch = 10;
     Kd_pitch = 0.0;
-    Ki_pitch = 0.1;
+    Ki_pitch = 0.0;
 
     Kp_yaw = 0.0;
     Kd_yaw = 0.0;
     Ki_yaw = 0.0;
 
-    Kp_alt = 0.25;
-    Kd_alt = 0;
-    Ki_alt = 0;
+    Kp_alt = 1.0;
+    Kd_alt = 0.5;
+    Ki_alt = 0.0;
 
-    Kp_roll_rate = 0.0004;
-    Kd_roll_rate = 0.0;
+    Kp_roll_rate = 0.0005;
+    Kd_roll_rate = 0.00002;
     Ki_roll_rate = 0.0000;
 
-    Kp_pitch_rate = 0.0004;
-    Kd_pitch_rate = 0.0000;
+    Kp_pitch_rate = 0.0005;
+    Kd_pitch_rate = 0.00002;
     Ki_pitch_rate = 0.00;
 
-    Kp_yaw_rate = 0.0025;
+    Kp_yaw_rate = 0.0005;
     Kd_yaw_rate = 0.0;
     Ki_yaw_rate = 0.0005;
 }
@@ -87,8 +87,8 @@ void UAV_PID::init() {
 void UAV_PID::adjustAngleDifference(float new_angle) {
     float difference = set_yaw_abs - new_angle;
 
-    while (difference < -180) difference += 360;
-    while (difference > 180) difference -= 360;
+    while (difference < -M_PI) difference += M_PI;
+    while (difference > M_PI) difference -= M_PI;
 
     state_yaw = difference;
 }
@@ -127,7 +127,8 @@ void UAV_PID::updateState(double roll, double pitch, double yaw, double alt) {
   state_roll = roll;
   state_pitch = pitch;
   adjustAngleDifference(yaw);
-  state_alt = getAltitude(alt, roll, pitch);
+  // state_alt = getAltitude(alt, roll, pitch);
+  state_alt = alt;
 }
 
 void UAV_PID::updateSetpointsRate(double roll_rate, double pitch_rate, double yaw_rate) {
@@ -146,8 +147,17 @@ void UAV_PID::setMotors(void) {
   for (int i = 0; i < 4; i++) {
     analogWrite(motor_pin[i], motor_speeds[i]);
   }
+}
 
-
+void UAV_PID::getMotors(double* m0, double* m1, double* m2, double* m3) {
+  // *m0 = motor_speeds[0] * 4.2 * 14000 / 255;
+  // *m1 = motor_speeds[1] * 4.2 * 14000 / 255;
+  // *m2 = motor_speeds[2] * 4.2 * 14000 / 255;
+  // *m3 = motor_speeds[3] * 4.2 * 14000 / 255;
+  *m0 = motor_speeds[0] * 30000 / 255;
+  *m1 = motor_speeds[1] * 30000 / 255;
+  *m2 = motor_speeds[2] * 30000 / 255;
+  *m3 = motor_speeds[3] * 30000 / 255;
 }
 
 void UAV_PID::printMotors(void) {

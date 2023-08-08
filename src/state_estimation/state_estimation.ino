@@ -14,6 +14,9 @@
 
 #define IMU_ADDRESS 0x68    //Change to the address of the IMU
 #define PERFORM_CALIBRATION //Comment to disable startup calibration
+#define SERIAL_BUFFER_LEN 256
+#define REAL
+
 
 
 #define PIN 8
@@ -22,6 +25,8 @@
 
 const char* ssid = "CobbledPhone";
 const char* password = "11111111";
+
+char buf[SERIAL_BUFFER_LEN];
 
 WiFiServer server(80);
 
@@ -64,6 +69,63 @@ void IRAM_ATTR onTimer() {
   //   tof_data[i] = tof.tof_sensors[i].read();
   //   if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
   // }
+}
+
+void parseSerialObservation(double* z, double* qw, double* qx, double* qy, double* qz, double* rollrate, double* pitchrate, double* yawrate) {
+    char* idx;
+    int newlinesCount = 0;  // Counter for newlines
+    int i = 0;  // Index for inputString
+
+    // Wait until three newlines are received or buffer is full
+    while (newlinesCount < 3 && i < SERIAL_BUFFER_LEN - 1) {
+        if (Serial.available()) {
+            char inChar = (char)Serial.read();
+            if (inChar == '\n') {
+                newlinesCount++;
+            }
+            buf[i++] = inChar;
+        }
+    }
+    buf[i] = '\0';
+    idx = strstr(buf, "x:");
+    double x,y;
+    if (idx != NULL) {
+        sscanf(idx, "x: [%lf %lf %lf]", &x, &y, z);
+    }
+
+    // Serial.print("x: ");
+    // Serial.print(x);
+    // Serial.print("\ty: ");
+    // Serial.print(y);
+    // Serial.print("\tz: ");
+    // Serial.print(*z);
+
+    idx = strstr(buf, "theta:");
+    if (idx != NULL) {
+        sscanf(idx, "theta: [%lf %lf %lf %lf]", qw, qx, qy, qz);
+    }
+
+    // Serial.print("\tqw: ");
+    // Serial.print(*qw);
+    // Serial.print("\tqx: ");
+    // Serial.print(*qx);
+    // Serial.print("\tqy: ");
+    // Serial.print(*qy);
+    // Serial.print("\tqz: ");
+    // Serial.print(*qz);
+
+    idx = strstr(buf, "omega:");
+    if (idx != NULL) {
+        sscanf(idx, "omega: [%lf %lf %lf]", rollrate, pitchrate, yawrate);
+    }
+
+
+    // Serial.print("\trollrate: ");
+    // Serial.print(*rollrate);
+    // Serial.print("\tpitchrate: ");
+    // Serial.print(*pitchrate);
+    // Serial.print("\tyawrate: ");
+    // Serial.println(*yawrate);
 }
 
 void saveCalibrationData(calData& data) {
@@ -137,24 +199,7 @@ Euler_t quaternionToEuler(Quaternion_t q) {
   return e;
 }
 
-
-
-
-void setup() {
-  pixels.begin(); // Start NeoPixel LEDs
-  setLED(0, 0, 0, 0);
-  statusActive();
-
-  Wire.begin(6,7);
-  Wire.setClock(400000); //400khz clo
-  Serial.begin(115200);
-  
-  while (!Serial) {
-    ;
-  }
-  Serial.println("Booted up!");
-
-  
+void init_imu() {
   int err = IMU.init(calib, IMU_ADDRESS);
   if (err != 0) {
     Serial.print("Error initializing IMU: ");
@@ -223,15 +268,36 @@ void setup() {
     Serial.print(", ");
     Serial.println(calib.magScale[2]);
   }
-  setLED(0, 0, 0, 0 );
+
+  #endif
+  
   //delay(1000);
   IMU.init(calib, IMU_ADDRESS);
   IMU.setIMUGeometry(3);
+}
 
-  //filter.begin(0.2f);
-  filter.begin(2.0f);
-#endif
-  tof.init_tof();
+void setup() {
+  pixels.begin(); // Start NeoPixel LEDs
+  setLED(0, 0, 0, 0);
+  statusActive();
+  delay(200);
+
+  Wire.begin(6,7);
+  Wire.setClock(400000); //400khz clo
+  Serial.begin(115200);
+  
+  while (!Serial) {
+    ;
+  }
+  #ifdef REAL
+    Serial.println("Booted up!");
+  #endif
+  setLED(0, 0, 0, 0 );
+  #ifdef REAL
+    init_imu();
+    filter.begin(2.0f);
+    tof.init_tof();
+  #endif
   // Initialize the hardware timer
   timer = timerBegin(0, 80, true); // 80 is the prescaler (with 80MHz CPU clock this makes it 1 MHz)
   
@@ -244,89 +310,112 @@ void setup() {
   // Enable the timer
   timerAlarmEnable(timer);
   pid.init();
-  pid.updateSetpoints(0,0,0,0.2);
+  pid.updateSetpoints(0,0,0,0.5);
   statusReady();
 }
 
 void loop() {
-  IMU.update();
-  IMU.getAccel(&IMUAccel);
-  IMU.getGyro(&IMUGyro);
-  if (IMU.hasMagnetometer()) {
-    IMU.getMag(&IMUMag);
-    filter.update(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ, IMUAccel.accelX, IMUAccel.accelY, IMUAccel.accelZ, IMUMag.magX, IMUMag.magY, IMUMag.magZ);
-  }
-  else {
-    filter.updateIMU(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ, IMUAccel.accelX, IMUAccel.accelY, IMUAccel.accelZ);
-  }
-  // Serial.print("QW: ");
-  // Serial.print(filter.getQuatW());
-  // Serial.print("\tQX: ");
-  // Serial.print(filter.getQuatX());
-  // Serial.print("\tQY: ");
-  // Serial.print(filter.getQuatY());
-  // Serial.print("\tQZ: ");
-  // Serial.println(filter.getQuatZ());
+  double z, qw, qx, qy, qz, rollrate, pitchrate, yawrate;
+  double roll, pitch, yaw;
+  #ifdef REAL
+    IMU.update();
+    IMU.getAccel(&IMUAccel);
+    IMU.getGyro(&IMUGyro);
+    if (IMU.hasMagnetometer()) {
+      IMU.getMag(&IMUMag);
+      filter.update(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ, IMUAccel.accelX, IMUAccel.accelY, IMUAccel.accelZ, IMUMag.magX, IMUMag.magY, IMUMag.magZ);
+    }
+    else {
+      filter.updateIMU(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ, IMUAccel.accelX, IMUAccel.accelY, IMUAccel.accelZ);
+    } 
+  
+    Quaternion_t q = {filter.getQuatW(), filter.getQuatX(), filter.getQuatY(), filter.getQuatZ()};
+    Euler_t e = quaternionToEuler(q);
 
-  Quaternion_t q = {filter.getQuatW(), filter.getQuatX(), filter.getQuatY(), filter.getQuatZ()};
-  Euler_t e = quaternionToEuler(q);
+    roll = e.roll;
+    pitch = e.pitch;
+    yaw = e.yaw;
 
-  float roll_in_degrees = degrees(e.roll);
-  float pitch_in_degrees = degrees(e.pitch);
-  float yaw_in_degrees = degrees(e.yaw);
+    rollrate = IMUGyro.gyroX;
+    pitchrate = IMUGyro.gyroY;
+    yawrate = IMUGyro.gyroZ;
 
-  uint16_t tof_data[5];
-  for(uint8_t i = 0; i < NUM_TOF; i++) {
-    tof_data[i] = tof.tof_sensors[i].read(false);
-    if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-  }
+    float roll_in_degrees = degrees(e.roll);
+    float pitch_in_degrees = degrees(e.pitch);
+    float yaw_in_degrees = degrees(e.yaw);
+
+    uint16_t tof_data[5];
+    for(uint8_t i = 0; i < NUM_TOF; i++) {
+      tof_data[i] = tof.tof_sensors[i].read(false);
+      if (tof.tof_sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+    }
+    z = tof_data[0] / 1000.0;
+  #else
+    parseSerialObservation(&z, &qw, &qx, &qy, &qz, &rollrate, &pitchrate, &yawrate);
+    Quaternion_t q = {qw, qx, qy ,qz};
+    Euler_t e = quaternionToEuler(q);
+
+    roll = e.roll;
+    pitch = e.pitch;
+    yaw = e.yaw;
+  #endif
 
   
-  if (count == 1000) {
-    pid.updateSetpoints(0,0,e.yaw,0.5);
-  }
-  pid.updateState(e.roll, e.pitch, e.yaw, tof_data[0] / 1000.0);
-  pid.updateStateRate(IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ);
+  // if (count == 1000) {
+  //   pid.updateSetpoints(0,0,yaw,0.5);
+  // }
+  pid.updateState(roll, pitch, yaw, z);
+  pid.updateStateRate(rollrate, pitchrate, yawrate);
   pid.compute();
 
-  if (count < 1400 && count >= 1000) {
-    pid.setMotors();
-  } else {
-    pid.stopMotors();
-  }
-
-  if(count % 50 == 0) {
-    unsigned long old_time = current_time;
-    current_time = millis();
-
-    Serial.print("Roll: ");
-    Serial.print(roll_in_degrees);
-    Serial.print("\tPitch: ");
-    Serial.print(pitch_in_degrees);
-    Serial.print("\tYaw: ");
-    Serial.print(yaw_in_degrees);
-    Serial.print("\t");
-
-    Serial.print("dRoll: ");
-    Serial.print(IMUGyro.gyroX);
-    Serial.print("\tdPitch: ");
-    Serial.print(IMUGyro.gyroY);
-    Serial.print("\tdYaw: ");
-    Serial.print(IMUGyro.gyroZ);
-    Serial.print("\tToF:\t");
-    
-
-    for (uint8_t i = 0; i < NUM_TOF; i++) {
-      Serial.print(tof_data[i]); 
-      Serial.print('\t');
+  #ifdef REAL
+    if (count < 1200 && count >= 1000) {
+      pid.setMotors();
+    } else {
+      pid.stopMotors();
     }
-    Serial.print("(");
-    Serial.print(current_time - old_time);
-    Serial.print("ms)");
-    Serial.println();
-    pid.printMotors();
-    current_time = millis();
-  }
+
+    if(count % 50 == 0) {
+      unsigned long old_time = current_time;
+      current_time = millis();
+
+      Serial.print("Roll: ");
+      Serial.print(roll_in_degrees);
+      Serial.print("\tPitch: ");
+      Serial.print(pitch_in_degrees);
+      Serial.print("\tYaw: ");
+      Serial.print(yaw_in_degrees);
+      Serial.print("\t");
+
+      Serial.print("dRoll: ");
+      Serial.print(IMUGyro.gyroX);
+      Serial.print("\tdPitch: ");
+      Serial.print(IMUGyro.gyroY);
+      Serial.print("\tdYaw: ");
+      Serial.print(IMUGyro.gyroZ);
+      Serial.print("\tToF:\t");
+      
+
+      for (uint8_t i = 0; i < NUM_TOF; i++) {
+        Serial.print(tof_data[i]); 
+        Serial.print('\t');
+      }
+      Serial.print("(");
+      Serial.print(current_time - old_time);
+      Serial.print("ms)");
+      Serial.println();
+      pid.printMotors();
+      current_time = millis();
+    }
+  #else
+    double m0, m1, m2, m3;
+    pid.getMotors(&m0, &m1, &m2, &m3);
+    // sprintf(buf, "motors: [%e, %e, %e, %e]\n", m1, m0, m3, m2);
+    sprintf(buf, "motors: [%e, %e, %e, %e]\n", m0, m1, m2, m3);
+
+    Serial.print(buf);
+  #endif
+
   count++;
   //delay(50);
 }

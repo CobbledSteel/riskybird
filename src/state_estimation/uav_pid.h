@@ -50,6 +50,7 @@ class UAV_PID {
     void updateSetpointsRate(double roll_rate, double pitch_rate, double yaw_rate);
     void updateStateRate(double roll_rate, double pitch_rate, double yaw_rate);
     void setMotors(void);
+    void getMotors(double* m0, double* m1, double* m2, double* m3);
     void printMotors(void);
     void stopMotors(void);
 
