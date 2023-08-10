@@ -19,7 +19,7 @@ import tensorflow as tf
 
 import os
 
-EPISODES = 10
+EPISODES = 500
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -71,9 +71,9 @@ class DQNAgent:
     def save(self, name):
         self.model.save_weights(name)
 
-    def generate_tflite(self, name="quant.tflite"):
-        x_values = random.sample(self.memory, 32)
-        def dataset(num_samples = 32):
+    def generate_tflite(self, name="quant.tflite", e=1):
+        x_values = random.sample(self.memory, min(len(self.memory), 500))
+        def dataset(num_samples = len(x_values)):
             for i in range(num_samples):
                 yield [x_values[i][0]]
         converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
@@ -95,25 +95,39 @@ if __name__ == "__main__":
     # agent.load("./save/cartpole-dqn.h5")
     done = False
     batch_size = 32
+    training_frequency = 10  # Train every 10 episodes
+    print(f"GPUS: {tf.config.list_physical_devices('GPU')}")
+    print('--------------- Starting Training')
+    
+    with tf.device('/GPU:0'):
+        for e in range(EPISODES):
+            state, _ = env.reset()
+            state = np.reshape(state, [1, state_size])
+            for time in range(500):
+                # env.render()
+                action = agent.act(state)
+                next_state, reward, done, _, _ = env.step(action)
+                # env.render()
+                reward = reward if not done else -10
+                next_state = np.reshape(next_state, [1, state_size])
+                agent.remember(state, action, reward, next_state, done)
+                state = next_state
+                if done:
+                    print("episode: {}/{}, score: {}, e: {:.2}"
+                        .format(e, EPISODES, time, agent.epsilon))
+                    break
+                    
+            # After every 'training_frequency' episodes, train the network
+            if (e + 1) % training_frequency == 0 and len(agent.memory) > batch_size:
+                print(f"Training at episode: {e+1}")
+                for _ in range(training_frequency):  # Train for 'training_frequency' times
+                    agent.replay(batch_size)
+                print(f'Finished Training')
 
-    for e in range(EPISODES):
-        state, _ = env.reset()
-        state = np.reshape(state, [1, state_size])
-        for time in range(500):
-            # env.render()
-            action = agent.act(state)
-            next_state, reward, done, _, _ = env.step(action)
-            env.render()
-            reward = reward if not done else -10
-            next_state = np.reshape(next_state, [1, state_size])
-            agent.remember(state, action, reward, next_state, done)
-            state = next_state
-            if done:
-                print("episode: {}/{}, score: {}, e: {:.2}"
-                      .format(e, EPISODES, time, agent.epsilon))
-                break
-            if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
-        # if e % 10 == 0:
-        #     agent.save("./save/cartpole-dqn.h5")
-    agent.generate_tflite()
+            # Continue with your checkpointing and TFLite generation
+            if e % 10 == 0:
+                agent.save(f"cartpole-dqn-unquant-{e}.h5")
+                agent.generate_tflite(f'quant-{e}.tflite')
+            agent.generate_tflite()
+
+
