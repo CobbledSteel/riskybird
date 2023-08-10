@@ -7,7 +7,6 @@
 # Please make sure to install openAI gym module
 # https://github.com/openai/gym
 import random
-# from sre_parse import FLAGS
 import gym
 import os
 import numpy as np
@@ -15,12 +14,6 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
-
-from absl import app
-from absl import FLAGS
-from absl import logging
-import tensorflow as tf
-
 
 EPISODES = 100
 
@@ -72,39 +65,7 @@ class DQNAgent:
         self.model.load_weights(name)
 
     def save(self, name):
-        # self.model.save_weights(name)
-
-        # Convert and save the model to .tflite
-        tflite_model = convert_tflite_model(self.model)
-        save_tflite_model(tflite_model,
-                            FLAGS.save_dir,
-                            model_name="hello_world_float.tflite")
-
-def convert_tflite_model(model):
-  """Convert the save TF model to tflite model, then save it as .tflite flatbuffer format
-    Args:
-        model (tf.keras.Model): the trained hello_world Model
-    Returns:
-        The converted model in serialized format.
-  """
-  converter = tf.lite.TFLiteConverter.from_keras_model(model)
-  tflite_model = converter.convert()
-  return tflite_model
-
-
-def save_tflite_model(tflite_model, save_dir, model_name):
-  """save the converted tflite model
-  Args:
-      tflite_model (binary): the converted model in serialized format.
-      save_dir (str): the save directory
-      model_name (str): model name to be saved
-  """
-  if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-  save_path = os.path.join(save_dir, model_name)
-  with open(save_path, "wb") as f:
-    f.write(tflite_model)
-  logging.info("Tflite model saved to %s", save_dir)
+        self.model.save_weights(name)
 
 
 if __name__ == "__main__":
@@ -117,12 +78,14 @@ if __name__ == "__main__":
     batch_size = 32
 
     for e in range(EPISODES):
-        state = env.reset()
+        state, _ = env.reset()
+        print("================================")
+        print(f"reset out: {state}")
         state = np.reshape(state, [1, state_size])
         for time in range(500):
             # env.render()
             action = agent.act(state)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, done, _, _ = env.step(action)
             env.render()
             reward = reward if not done else -10
             next_state = np.reshape(next_state, [1, state_size])
