@@ -1,6 +1,6 @@
 ## This is course material for Introduction to Modern Artificial Intelligence
 ## Example code: cartpole_dqn.py
-## Author: Allen Y. Yang
+## Author: Kris Dong, Allen Y. Yang
 ##
 ## (c) Copyright 2020. Intelligent Racing Inc. Not permitted for commercial use
 
@@ -15,7 +15,11 @@ from keras.models import Sequential
 from keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 
-EPISODES = 100
+import tensorflow as tf
+
+import os
+
+EPISODES = 10
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -67,6 +71,21 @@ class DQNAgent:
     def save(self, name):
         self.model.save_weights(name)
 
+    def generate_tflite(self, name="quant.tflite"):
+        x_values = random.sample(self.memory, 32)
+        def dataset(num_samples = 32):
+            for i in range(num_samples):
+                yield [x_values[i][0]]
+        converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        converter.inference_input_type = tf.int8
+        converter.inference_output_type = tf.int8
+        converter.representative_dataset = dataset
+        tflite_model = converter.convert() 
+        with open(f'./{name}', "wb") as f:
+            f.write(tflite_model)
+
 
 if __name__ == "__main__":
     env = gym.make('CartPole-v1')
@@ -79,8 +98,6 @@ if __name__ == "__main__":
 
     for e in range(EPISODES):
         state, _ = env.reset()
-        print("================================")
-        print(f"reset out: {state}")
         state = np.reshape(state, [1, state_size])
         for time in range(500):
             # env.render()
@@ -99,3 +116,4 @@ if __name__ == "__main__":
                 agent.replay(batch_size)
         # if e % 10 == 0:
         #     agent.save("./save/cartpole-dqn.h5")
+    agent.generate_tflite()
