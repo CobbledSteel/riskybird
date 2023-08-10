@@ -1,4 +1,4 @@
-# ROAR-Academy
+# RiskyBird for ROAR-Academy
 
 This is the tutorial crearted by Kris Dong and Dima Nikiforov for ROAR Academy. The material has been taught at the University of California, Berkeley, as part of Berkeley ROAR Racing curriculum to students who want to learn introduction-level skills about:
 
