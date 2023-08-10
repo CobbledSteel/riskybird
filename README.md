@@ -8,7 +8,7 @@ This is the tutorial crearted by Kris Dong and Dima Nikiforov for ROAR Academy. 
 * Gradient-Descent Algorithms
 * Deep Neural Networks (DNN)
 
-The material has been made open source FOR NON-COMMERCIAL USE only. Please contact the author for any questions regarding commercial licensing: <allen@intelligentracing.com>
+The material has been made open source FOR NON-COMMERCIAL USE only. Please contact the author for any questions: <krisdong@berkeley.edu> <vnikiforov@berkeley.edu>
 
 ## Basic Installation
 
