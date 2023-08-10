@@ -1,14 +1,15 @@
 # RiskyBird for ROAR-Academy
 
-This is the tutorial crearted by Kris Dong and Dima Nikiforov for ROAR Academy. The material has been taught at the University of California, Berkeley, as part of Berkeley ROAR Racing curriculum to students who want to learn introduction-level skills about:
+This is the tutorial created by Kris Dong and Dima Nikiforov for ROAR Academy. The material has been taught at the University of California, Berkeley, as part of Berkeley ROAR Racing curriculum to students who want to learn entry-level skills about:
 
-* Introduction to Embedded Systems 
-* Edge Machine Learning Python Programming;
+* Introduction to Embedded Systems
+* Machine Learning Programming on Edge device 
+* Introduction to Robotics
 * Scientific Programming and Quantization
-* Gradient-Descent Algorithms
 * Deep Neural Networks (DNN)
+* Reinforcement Learning (RL) 
 
-The material has been made open source FOR NON-COMMERCIAL USE only. Please contact the author for any questions: <krisdong@berkeley.edu> <vnikiforov@berkeley.edu>
+The material has been made open source FOR NON-COMMERCIAL USE only. Please contact the author for any questions: <vnikiforov@berkeley.edu>, <krisdong@berkeley.edu>
 
 ## Basic Installation
 
