@@ -145,7 +145,7 @@ Certainly! Let's create a lab that guides students on how to use the Preferences
 
 ---
 
-## **Lab: Permanent Data Storage with the ESP32's Preferences Library**
+## **Lab3: Permanent Data Storage with the ESP32's Preferences Library**
 
 ### **Objective**:
 Learn how to use the Preferences library to store and retrieve data that persists across power cycles on the ESP32.
