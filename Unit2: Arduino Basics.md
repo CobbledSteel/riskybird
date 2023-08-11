@@ -141,10 +141,6 @@ ESP32-C3 comes with a built-in RGB LED, which can display a variety of colors by
 
 Can you modify the code to make the RGB LED fade smoothly between colors?
 
-Certainly! Let's create a lab that guides students on how to use the Preferences library for the ESP32. This will involve storing and retrieving values from the ESP32's built-in non-volatile storage (NVS). We'll use a simple example of storing a counter value that persists even after the ESP32 is reset or powered off.
-
----
-
 ## **Lab3: Permanent Data Storage with the ESP32's Preferences Library**
 
 ### **Objective**:
