@@ -29,12 +29,17 @@ class PPOAgent:
 
     def compute_loss(self, advantages, old_probs, actions, rewards):
         def loss(y_true, y_pred):
-            new_probs = tf.reduce_sum(actions * y_pred, axis=1)
+            print("y_true shape: ", y_true.shape)  # Add this
+            print("y_pred shape: ", y_pred.shape)  # Add this
+            new_probs = tf.reduce_sum(y_true * y_pred, axis=1)
+            print("old_probs shape:", old_probs.shape)
+
             ratio = new_probs / old_probs
             surr1 = ratio * advantages
             surr2 = tf.clip_by_value(ratio, 1.0 - CLIP_EPSILON, 1.0 + CLIP_EPSILON) * advantages
             return -tf.reduce_mean(tf.minimum(surr1, surr2))
         return loss
+
 
     def update(self, states, actions, rewards, old_probs):
         states = np.array(states)
@@ -48,11 +53,15 @@ class PPOAgent:
             returns.insert(0, R)
         returns = np.array(returns)
         returns = (returns - np.mean(returns)) / (np.std(returns) + 1e-5)
-        advantages = returns - np.squeeze(self.policy.predict(states))
+        
+        action_probs = np.sum(action_matrix * self.policy.predict(states), axis=1)
+        advantages = returns - action_probs
 
         loss_fn = self.compute_loss(advantages, old_probs, action_matrix, returns)
         self.policy.compile(optimizer=keras.optimizers.Adam(lr=LEARNING_RATE), loss=loss_fn)
+        print("old_probs shape:", old_probs.shape)
         self.policy.fit(states, action_matrix, epochs=EPOCHS, verbose=0)
+
 
 def main():
     env = gym.make('CartPole-v1')
