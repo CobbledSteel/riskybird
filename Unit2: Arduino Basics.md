@@ -140,3 +140,64 @@ ESP32-C3 comes with a built-in RGB LED, which can display a variety of colors by
 ### **Challenge**:
 
 Can you modify the code to make the RGB LED fade smoothly between colors?
+
+Certainly! Let's create a lab that guides students on how to use the Preferences library for the ESP32. This will involve storing and retrieving values from the ESP32's built-in non-volatile storage (NVS). We'll use a simple example of storing a counter value that persists even after the ESP32 is reset or powered off.
+
+---
+
+## **Lab: Permanent Data Storage with the ESP32's Preferences Library**
+
+### **Objective**:
+Learn how to use the Preferences library to store and retrieve data that persists across power cycles on the ESP32.
+
+### **Materials**:
+
+- ESP32-C3 development board.
+- USB cable.
+- Computer with Arduino IDE installed.
+
+### **Background**:
+
+ESP32's non-volatile storage (NVS) allows data to be stored even when the board is powered off. This feature can be useful for settings, high scores in games, or counters that shouldn't reset every time the device restarts. However, the NVS has a finite number of write cycles, so it's crucial to use it judiciously.
+
+### **Procedure**:
+
+1. **Setup**:
+    - Connect the ESP32-C3 board to the computer using a USB cable.
+    - Open the Arduino IDE.
+    - Under `Tools > Board`, select `ESP32-C3 Dev Module`.
+    - Ensure the correct COM port is selected under `Tools > Port`.
+
+2. **Loading the Code**:
+    - Open `src/counter_nvs/counter_nvs.ino` in Arduino IDE.
+
+3. **Modifying the Code**:
+    - **TODO 1**: Use the `preferences.getInt` function to retrieve the `count` value. If it doesn't exist, set it to 0.
+    - **TODO 2**: Print the `count` value to the Serial Monitor using `Serial.println()`.
+    - **TODO 3**: Increment the `count` value.
+    - **TODO 4**: Store the updated `count` value to NVS using `preferences.putInt`.
+
+4. **Uploading and Testing**:
+    - Click the `Upload` button in the Arduino IDE.
+    - Once uploaded, open the Serial Monitor.
+    - You should see a count value printed. Restart or reset the ESP32 and observe the count value again. It should have incremented from the previous value, demonstrating that the value persists across restarts.
+
+### **Questions**:
+
+1. What are the benefits of using non-volatile storage like the NVS in ESP32?
+2. What will happen if you exceed the maximum write cycles of NVS?
+3. Why is it crucial to close the Preferences after using it (`preferences.end()`)?
+
+### **Pitfalls & Considerations**:
+
+- **Write Cycles**: NVS memory has a limited number of write cycles (typically around 100,000 times for each block). Continuously writing to NVS can wear it out.
+  
+- **Space Limitation**: ESP32 has limited NVS space. Always check if there's enough space before writing large data.
+  
+- **Multiple Projects**: If students use the same ESP32 board for different projects, they might overwrite data from previous projects. Always use unique namespace names and key names to avoid data collision.
+
+### **Challenge**:
+
+1. Can you modify the code to store more than one value, for example, `count1` and `count2`?
+2. What are some techniques you could use to reduce the impact of frequenct writes to the NVS? (Hint: consider data that are written often but change rarely)
+
