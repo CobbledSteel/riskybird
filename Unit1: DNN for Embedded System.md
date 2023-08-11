@@ -1,7 +1,8 @@
-# Pre-Lab Instructions: Convert the 
+# Instructions: Quantization and Reinforcement Learning
+# Pre-Lab Set-up
 """
-## This is course material for Introduction to Artificial Intelligence
-## Example code: cartpole_ppo_keras.py
+
+# Example code: cartpole_ppo_keras.py
 Author: ## Author: Kris Dong, Dima Nikiforov, Ilias Chrysovergis
 Description: Implementation of a Proximal Policy Optimization agent for the CartPole-v0 environment.
 """
