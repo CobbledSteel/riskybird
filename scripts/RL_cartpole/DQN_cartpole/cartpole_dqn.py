@@ -1,6 +1,6 @@
-## This is course material for Introduction to Modern Artificial Intelligence
+## This is course material for Introduction to Artificial Intelligence
 ## Example code: cartpole_dqn.py
-## Author: Kris Dong, Allen Y. Yang
+## Author: Kris Dong, Dima Nikiforov, Allen Y. Yang
 ##
 ## (c) Copyright 2020. Intelligent Racing Inc. Not permitted for commercial use
 

@@ -1,10 +1,8 @@
 """
-Title: Proximal Policy Optimization
-Author: [Ilias Chrysovergis](https://twitter.com/iliachry)
-Date created: 2021/06/24
-Last modified: 2021/06/24
+## This is course material for Introduction to Artificial Intelligence
+## Example code: cartpole_ppo_keras.py
+Author: ## Author: Kris Dong, Dima Nikiforov, Ilias Chrysovergis
 Description: Implementation of a Proximal Policy Optimization agent for the CartPole-v0 environment.
-Accelerator: NONE
 """
 
 """

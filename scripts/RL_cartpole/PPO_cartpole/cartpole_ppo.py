@@ -1,3 +1,6 @@
+## This is course material for Introduction to Artificial Intelligence
+## Example code: cartpole_ppo.py
+## Author: Kris Dong, Dima Nikiforov
 import numpy as np
 import gym
 import tensorflow as tf
