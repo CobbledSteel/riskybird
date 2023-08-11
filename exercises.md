@@ -6,32 +6,31 @@ system. To access the serialized data from our program, we have to compile it
 into the executable and store it in Flash. The easiest way to do that is to
 convert the file into a C data array.
 
-```
+
 # Install xxd if it is not available
 ### macOS:
 On macOS, xxd comes bundled with the vim package. If you have Vim installed, you likely already have xxd.
 
 To check if it's already installed:
-! which xxd
+```! which xxd```
 
 If not installed, you can install Vim (and consequently xxd) using Homebrew, a popular package manager for macOS:
 
 # Install Homebrew if it isn't already installed
-! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
 
 # Install vim using Homebrew, which includes xxd
-! brew install vim
+```! brew install vim```
 
 ### Linux:
-! apt-get -qq install xxd
+```! apt-get -qq install xxd```
 
 
 # After installation of xxd, you should be able to use xxd directly from the terminal to save the file as a C source file
-! xxd -i person_detection_model.tflite > person_detect_model_data.cc
-```
+```! xxd -i person_detection_model.tflite > person_detect_model_data.cc```
 
 You can now replace the existing `person_detect_model_data.cc` file with the
-version you've trained, and be able to run your own model on embedded devices.
+the version you've trained, and be able to run your own model on embedded devices.
 
 ## Pre-Lab Instructions: Setting up the ESP32-C3 with the Arduino IDE
 
