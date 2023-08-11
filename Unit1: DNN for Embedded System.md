@@ -44,9 +44,7 @@ This code example uses Keras and Tensorflow v2. It is based on the PPO Original 
 the OpenAI's Spinning Up docs for PPO, and the OpenAI's Spinning Up implementation of PPO using Tensorflow v1.
 
 [OpenAI Spinning Up Github - PPO](https://github.com/openai/spinningup/blob/master/spinup/algos/tf1/ppo/ppo.py)
-"""
 
-"""
 ## Libraries
 
 For this example, the following libraries are used:
@@ -68,3 +66,11 @@ Run directly from the terminal to save the file as a C source file
 
 You can now replace the existing `person_detect_model_data.cc` file with the
 the version you've trained, and be able to run your own model on embedded devices.
+
+
+## Visualizations
+In early stages of training:
+![Imgur](.gif)
+
+In later stages of training:
+![Imgur](.gif)
