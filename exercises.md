@@ -8,8 +8,25 @@ convert the file into a C data array.
 
 ```
 # Install xxd if it is not available
+### macOS:
+On macOS, xxd comes bundled with the vim package. If you have Vim installed, you likely already have xxd.
+
+To check if it's already installed:
+! which xxd
+
+If not installed, you can install Vim (and consequently xxd) using Homebrew, a popular package manager for macOS:
+
+# Install Homebrew if it isn't already installed
+! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install vim using Homebrew, which includes xxd
+! brew install vim
+
+### Linux:
 ! apt-get -qq install xxd
-# Save the file as a C source file
+
+
+# After installation of xxd, you should be able to use xxd directly from the terminal to save the file as a C source file
 ! xxd -i person_detection_model.tflite > person_detect_model_data.cc
 ```
 
