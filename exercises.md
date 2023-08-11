@@ -104,3 +104,57 @@ By the end of this lab, you will have learned how to send the "Hello World" mess
 ### Conclusion:
 You've successfully sent a message from the ESP32-C3 to your computer using the Serial port. This basic communication is foundational for many IoT (Internet of Things) projects and other applications involving the ESP32-C3.
 
+
+## **Lab 2: Controlling the RGB LED on ESP32-C3**
+
+### **Objective**:
+Get familiarized with the ESP32-C3's built-in RGB LED, learn to control its colors, and understand basic functions of the Arduino platform.
+
+### **Materials**:
+
+- ESP32-C3 development board.
+- USB cable.
+- Computer with Arduino IDE installed.
+
+### **Background**:
+
+ESP32-C3 comes with a built-in RGB LED, which can display a variety of colors by mixing red, green, and blue light. In this lab, we'll be using the Adafruit_NeoPixel library to control this LED and make it change colors.
+
+### **Procedure**:
+
+1. **Setup**:
+    - Connect the ESP32-C3 board to the computer using a USB cable.
+    - Open the Arduino IDE on your computer.
+    - Under `Tools > Board`, select `ESP32-C3 Dev Module`.
+    - Make sure the correct COM port is selected under `Tools > Port`.
+
+2. **Loading the Code**:
+    - Navigate to `src/rgb_led/rgb_led.ino` in the Arduino IDE.
+    - Open the file.
+
+3. **Understanding the Code**:
+    - The `#include` directive at the top allows us to use the Adafruit_NeoPixel library.
+    - Constants like `PIN`, `NUMPIXELS`, and `BRIGHTNESS` are defined for easy reference.
+    - The `pixels` object is an instance of `Adafruit_NeoPixel` and represents the built-in RGB LED.
+    - The `setColor` function sets the color of the RGB LED based on the RGB values passed to it.
+    - In the `loop` function, we will set the RGB LED to various colors with a 1-second delay between each color change.
+
+4. **Modifying the Code**:
+    - **TODO 1**: Define the brightness of the NeoPixel by setting a value for `BRIGHTNESS` between 0 (off) and 255 (full brightness).
+    - **TODO 2**: Set the RGB LED's color to red using the `setColor` function.
+    - **TODO 3**: Similarly, set the LED's color to green.
+    - **TODO 4**: Finally, set the LED's color to blue.
+
+5. **Uploading and Running**:
+    - Once you've made the changes, click on the `Upload` button (the right arrow icon) in the Arduino IDE. This will compile and upload your code to the ESP32-C3.
+    - After uploading, you should see the RGB LED on the ESP32-C3 change colors: red, green, and blue, each lasting for 1 second.
+
+### **Questions**:
+
+1. What happens if you set the `BRIGHTNESS` value to 0? What about 255?
+2. Can you make the RGB LED display a yellow color? (Hint: Yellow is made by mixing red and green.)
+3. How would you modify the code to reduce the delay between color changes?
+
+### **Challenge**:
+
+Can you modify the code to make the RGB LED fade smoothly between colors?
