@@ -49,7 +49,7 @@ the OpenAI's Spinning Up docs for PPO, and the OpenAI's Spinning Up implementati
 """
 ## Libraries
 
-For this example the following libraries are used:
+For this example, the following libraries are used:
 
 1. `numpy` for n-dimensional arrays
 2. `tensorflow` and `keras` for building the deep RL PPO agent
@@ -63,27 +63,7 @@ system. To access the serialized data from our program, we have to compile it
 into the executable and store it in Flash. The easiest way to do that is to
 convert the file into a C data array.
 
-
-##### Install xxd if it is not available
-###### macOS:
-On macOS, xxd comes bundled with the vim package. If you have Vim installed, you likely already have xxd.
-
-To check if it's already installed:
-```! which xxd```
-
-If not installed, you can install Vim (and consequently xxd) using Homebrew, a popular package manager for macOS:
-
-- Install Homebrew if it isn't already installed
-```! /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"```
-
-- Install vim using Homebrew, which includes xxd
-```! brew install vim```
-
-###### Linux:
-```! apt-get -qq install xxd```
-
-###### Use xxd to convert tflite file to a C source file
-After installation of xxd, you should be able to use xxd directly from the terminal to save the file as a C source file
+Run directly from the terminal to save the file as a C source file
 ```! xxd -i person_detection_model.tflite > person_detect_model_data.cc```
 
 You can now replace the existing `person_detect_model_data.cc` file with the
