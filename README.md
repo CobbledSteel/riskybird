@@ -65,12 +65,12 @@ This course will require installation of the following reinforcement learning mo
  pip install pyglet==1.5.11
 ~~~
 
-* stable-baselines 3: <https://github.com/DLR-RM/stable-baselines3>
+* gym-pybullet-drones simulator
 ~~~
-    python -m pip install stable-baselines3[extra]
+ git submodule update --init --recursive
+ cd sim/gym-pybullet-drones/
+ pip3 install --upgrade pip
+ pip3 install -e .
+ pip3 install pyserial
 ~~~
 
-* highway-env: <https://github.com/Farama-Foundation/HighwayEnv>
-~~~
-    python -m pip install highway-env
-~~~
