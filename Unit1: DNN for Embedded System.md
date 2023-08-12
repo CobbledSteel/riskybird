@@ -156,7 +156,4 @@ Unlike laptops or desktops, embedded devices don't access models through filesys
 
 ---
 
-## 7. Resources
-- [OpenAI Spinning Up PPO Code](https://github.com/openai/spinningup/blob/master/spinup/algos/tf1/ppo/ppo.py)
-
 
