@@ -32,6 +32,8 @@ CartPole is a classic problem in the field of Reinforcement Learning:
 - **Reward**: +1 for every timestep the pole remains upright.
 - **Episode Termination**: Pole tilts over 15 degrees from vertical or cart moves over 2.4 units from center.
 - **Maximum Duration**: An episode ends after 200 steps.
+
+![CartPole Example](https://gymnasium.farama.org/_images/cart_pole.gif)
   
 [Details on CartPole-v0](https://gymnasium.farama.org/environments/classic_control/cart_pole/)
 
