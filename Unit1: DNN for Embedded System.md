@@ -1,13 +1,7 @@
 # Instructions: Quantization and Reinforcement Learning
 # Pre-Lab Set-up
-"""
 
-# Example code: cartpole_ppo_keras.py
-Author: ## Author: Kris Dong, Dima Nikiforov, Ilias Chrysovergis
-Description: Implementation of a Proximal Policy Optimization agent for the CartPole-v0 environment.
-"""
 
-"""
 ## Introduction
 
 This code example solves the CartPole-v0 environment using a Proximal Policy Optimization (PPO) agent.
