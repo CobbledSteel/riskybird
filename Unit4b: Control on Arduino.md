@@ -70,7 +70,7 @@ UAV_PID::UAV_PID(void) {
 
 Change all PID values in the constructor to `0`, upload the updated code to the ESP32, and then run the python simulator.
 
-🤔 **Discussion Point:** What did you observe when all PID values were set to 0?
+🚀 **Activity:** What do you observe when all PID values were set to 0?
 
 ### **3.3 Tweaking the PID Values**
 
