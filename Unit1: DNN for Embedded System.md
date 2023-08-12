@@ -31,7 +31,8 @@ CartPole is a classic problem in the field of Reinforcement Learning:
 - **Controls**: Apply forces of +1 or -1 to the cart.
 - **Reward**: +1 for every timestep the pole remains upright.
 - **Episode Termination**: Pole tilts over 15 degrees from vertical or cart moves over 2.4 units from center.
-- **Maximum Duration**: An episode ends after 200 steps.
+
+![CartPole Example](https://gymnasium.farama.org/_images/cart_pole.gif)
   
 [Details on CartPole-v0](https://gymnasium.farama.org/environments/classic_control/cart_pole/)
 
@@ -69,7 +70,13 @@ Navigate to `./scripts/RL_cartpole/PPO_cartpole/` and run the `cartpole_ppo_kera
 
 ## 4. Quantizing the Trained Model
 
-Once the model is trained, it's essential to quantize it for efficient deployment. This step prepares your model for the constraints of edge devices:
+### Why Quantization?
+
+Edge devices typically have limited computational resources, making it difficult for them to run large, floating-point Deep Neural Network (DNN) models efficiently. Quantization addresses this by converting the model's weights and activations from floating-point values into 8-bit integers. This process significantly reduces the model's size and accelerates its inference speed. However, it's important to note that this comes at the expense of slight accuracy degradation.
+
+### Representative Sampling
+
+For quantization to work well, TensorFlow requires a representative dataset. This dataset provides a distribution of input values the model will likely encounter in the real world. TensorFlow uses this data to determine the best way to map floating-point values to 8-bit integers.
 
 ```python
 def generate_tflite(model, name="quant.tflite", buffer_size=500):
@@ -93,6 +100,37 @@ def generate_tflite(model, name="quant.tflite", buffer_size=500):
         f.write(tflite_model)
 ```
 
+In our given function, this process is captured by the following code:
+
+```python
+# Sampling data for representative dataset
+x_values = [buffer.observation_buffer[i] for i in random.sample(range(buffer_size), buffer_size)]
+```
+
+Here's what's happening:
+
+- We randomly sample `buffer_size` observations from the `buffer.observation_buffer`.
+- These sampled observations form the representative dataset.
+
+### Importance of Representative Sampling
+
+#### Range Determination
+
+During quantization, each floating-point number is mapped to an integer. This mapping requires determining the range (minimum and maximum values) of the data. If the representative dataset isn't truly representative, the determined range might be too small or too large, causing the model to either saturate or use a non-optimal range, respectively. This can lead to significant accuracy drops.
+
+### Implications of Non-representative Samples
+
+1. **Loss of Accuracy**: Non-representative samples might result in TensorFlow not capturing the true data distribution. This can lead to considerable accuracy degradation post-quantization. For example, if the model is supposed to recognize a range of colors but is only provided with grayscale images during sampling, the quantized model might fail when exposed to colored images.
+
+2. **Data Saturation**: If the sampled data doesn't capture the extreme values the model might encounter, the quantization process might clip values beyond the sampled range, causing a saturation effect.
+
+3. **Suboptimal Utilization**: If the representative dataset has outliers or doesn't capture the general distribution well, TensorFlow might choose non-optimal mappings, wasting some of the 8-bit range.
+
+### Conclusion
+
+In essence, quantization is a crucial step for deploying models to edge devices. However, its success heavily relies on having a representative dataset. By ensuring this dataset is truly representative of real-world scenarios, we ensure that the quantized model remains accurate and robust.
+
+
 ---
 
 ## 5. Generating C Source File for ESP32-C3 Deployment
@@ -111,14 +149,11 @@ Unlike laptops or desktops, embedded devices don't access models through filesys
 ## 6. Visualizations
 
 **Early Training Stage**:  
-![Early Training](.gif)
+![Early Training](./img/cartpole_training.gif)
 
 **Later Training Stage**:  
-![Advanced Training](.gif)
+![Advanced Training](./img/cartpole_completed.gif)
 
 ---
-
-## 7. Resources
-- [OpenAI Spinning Up PPO Code](https://github.com/openai/spinningup/blob/master/spinup/algos/tf1/ppo/ppo.py)
 
 
