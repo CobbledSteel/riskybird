@@ -16,16 +16,26 @@ By the end of this pre-lab, you will have successfully set up the ESP32-C3 board
     - Go to `Tools > Board > Boards Manager`.
     - In the search bar, type "esp32".
     - Find "esp32 by Espressif Systems" in the list and install it.
+  
+2. **Install the Required Libraries**
+    - Go to `Tools > Manage Libraries...`.
+    - Install the following Libraries:
+      - Adafruit Neopixel (By Adafruit)
+      - FastIMU (By LiquidGCS)
+      - JPEGDEC (By Larry Bank)
+      - PID (By Brett Beauregard)
+      - TensorFlowLite_ESP32 (By TensorFlow)
+      - VL53L1X (By Pololu)
 
-3. **Select Your Board**
+4. **Select Your Board**
     - Go to `Tools > Board`.
     - Scroll down the list and select `ESP32-C3 Dev Module`.
 
-4. **Select the COM Port**
+5. **Select the COM Port**
     - With the ESP32-C3 board connected to your computer via USB, go to `Tools > Port`.
     - Select the COM port that the ESP32-C3 is connected to. It's often labeled as "Silicon Labs" or "esp32" in the menu.
 
-5. **Test the Setup**
+6. **Test the Setup**
     - Open the "Blink" example by going to `File > Examples > 01.Basics > Blink`.
     - Click the "Upload" button (the right-facing arrow).
     - After the upload is complete, you should see the on-board LED blinking. If it does, congratulations! Your setup is correct.
