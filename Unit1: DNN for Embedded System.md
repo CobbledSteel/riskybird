@@ -33,7 +33,7 @@ CartPole is a classic problem in the field of Reinforcement Learning:
 - **Episode Termination**: Pole tilts over 15 degrees from vertical or cart moves over 2.4 units from center.
 - **Maximum Duration**: An episode ends after 200 steps.
   
-[Details on CartPole-v0](https://gym.openai.com/envs/CartPole-v0/)
+[Details on CartPole-v0](https://gymnasium.farama.org/environments/classic_control/cart_pole/)
 
 ### Proximal Policy Optimization
 PPO is a policy gradient method with applications in both discrete and continuous action spaces. Key features include:
