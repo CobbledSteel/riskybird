@@ -111,10 +111,10 @@ Unlike laptops or desktops, embedded devices don't access models through filesys
 ## 6. Visualizations
 
 **Early Training Stage**:  
-![Early Training](.gif)
+![Early Training](./img/cartpole_training.gif)
 
 **Later Training Stage**:  
-![Advanced Training](.gif)
+![Advanced Training](./img/cartpole_completed.gif)
 
 ---
 
