@@ -17,7 +17,7 @@ By the end of this pre-lab, you will have successfully set up the ESP32-C3 board
     - In the search bar, type "esp32".
     - Find "esp32 by Espressif Systems" in the list and install it.
   
-2. **Install the Required Libraries**
+3. **Install the Required Libraries**
     - Go to `Tools > Manage Libraries...`.
     - Install the following Libraries:
       - Adafruit Neopixel (By Adafruit)
