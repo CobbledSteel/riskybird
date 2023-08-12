@@ -127,7 +127,7 @@ If we solely rely on the gyroscope to determine the drone's position, we would b
 
 The Madgwick filter is a sensor fusion algorithm. It combines the absolute orientation data from the accelerometer and magnetometer with the gyroscope's rate of change. This fusion compensates for the individual limitations of each sensor and provides a more accurate estimation of the drone's orientation.
 
-🤔 **Discussion Point**: Why might combining data from different sensors lead to a more accurate estimation?
+🤔 **Discussion Point**: Why might combining data from different sensors lead to a more accurate estimation? Are there any other sensors that would be useful here? Consider cases where you need the drone's absolute position in addition to absolute orientation.
 
 ### **3.4 Optional: Uncalibrated Data Analysis**
 
