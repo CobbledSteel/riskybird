@@ -79,6 +79,7 @@ void init_imu() {
 #ifdef PERFORM_CALIBRATION
   // Check for pre-existing calibration data, if not, re-calibrate
   if(!loadCalibrationData(calib)) {
+  // if(true) {
     Serial.println("FastIMU Calibrated Quaternion example");
     if (IMU.hasMagnetometer()) {
       delay(1000);
@@ -227,7 +228,7 @@ void loop() {
                     IMUGyro.gyroX, IMUGyro.gyroY, IMUGyro.gyroZ);
 
       for (uint8_t i = 0; i < NUM_TOF; i++) {
-          Serial.printf("%.2f\t", tof_data[i]);
+          Serial.printf("%d\t", tof_data[i]);
       }
 
       Serial.printf("(%ldms)\n", current_time - old_time);

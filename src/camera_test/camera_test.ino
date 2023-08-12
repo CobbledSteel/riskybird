@@ -80,9 +80,6 @@ int saveImgBuf(JPEGDRAW *pDraw)
 }
 
 void setup() {
-
-
-
   Serial.begin(115200);
   Serial.println("VC0706 Camera snapshot test");
   
@@ -133,7 +130,8 @@ void setup() {
   else if (imgsize == VC0706_320x240) Serial.println(" (320x240)");
   else if (imgsize == VC0706_160x120) Serial.println(" (160x120)");
   else Serial.println(" (Unexpected Size)");
-
+  delay(500);
+  
   cam.setCompression(36);
   delay(500);
 
