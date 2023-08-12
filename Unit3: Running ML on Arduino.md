@@ -37,21 +37,21 @@ The ESP32-C3 microcontroller will be running the inference part, using a pre-tra
 2. Open the `actor_cartpole_model_data.cc` file. This file contains the trained model in a C++ array format.
 3. Copy the entire contents of `actor_cartpole_model_data.cc`.
 4. Now, navigate to `src/cartpole_tflite/`.
-5. Open the `model.cpp` file in a text editor or the Arduino IDE and replace its contents below `#include "model.h"` with the copied code.
-7. Open the `cartpole_tflite.ino` Arduino code.
-8. Upload the code to the ESP32-C3.
+5. Open the `cartpole_tflite.ino` Arduino code.
+6. Open the `model.cpp` file in a text editor or the Arduino IDE and replace its contents below `#include "model.h"` with the copied code.
+7. Upload the code to the ESP32-C3.
 
 #### 3. Running the Gym Environment
 
 1. Connect the ESP32-C3 to your computer via the USB cable.
 2. Navigate to `scripts/RL_cartpole/PPO_cartpole/`.
 3. Open cartpole_arduino.py and set the PORT variable (found below the import statements) to match the serial port used in your Arduino IDE.
-3. Run the `cartpole_arduino.py` script:
+4. Run the `cartpole_arduino.py` script:
    ```bash
    python cartpole_arduino.py
    ```
 
-4. You should see the `CartPole` environment window pop up, showing the cart and pole in action. The ESP32-C3 uses the TensorFlow Lite model to determine actions based on the observations it receives from the Python script.
+5. You should see the `CartPole` environment window pop up, showing the cart and pole in action. The ESP32-C3 uses the TensorFlow Lite model to determine actions based on the observations it receives from the Python script.
 
 #### 4. Observations and Conclusions
 
