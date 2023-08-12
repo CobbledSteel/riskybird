@@ -45,6 +45,7 @@ The ESP32-C3 microcontroller will be running the inference part, using a pre-tra
 
 1. Connect the ESP32-C3 to your computer via the USB cable.
 2. Navigate to `scripts/RL_cartpole/PPO_cartpole/`.
+3. Open cartpole_arduino.py and set the PORT variable (found below the import statements) to match the serial port used in your Arduino IDE.
 3. Run the `cartpole_arduino.py` script:
    ```bash
    python cartpole_arduino.py
